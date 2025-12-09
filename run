@@ -1,0 +1,10 @@
+#!/bin/sh
+
+rm -r build
+
+javac -d build *.java
+
+find . -maxdepth 1 ! -name 'build' ! -name '*.java' ! -name 'run' ! -name '.' -exec cp -r {} build/ &>/dev/null
+
+cd build
+java Main
