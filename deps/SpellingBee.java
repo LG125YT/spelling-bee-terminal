@@ -18,6 +18,7 @@ public class SpellingBee {
   public int day;
   public int year;
   public int points;
+  public int max_points = 0;
   public ArrayList<String> answered_words = new ArrayList<String>();
   public ArrayList<String> valid_words = new ArrayList<String>(); // Only available for unarchived games.
   public String[] statuses = {
@@ -104,6 +105,12 @@ public class SpellingBee {
   }
 
   public boolean prompt() throws IOException, InterruptedException {
+    if (points == max_points && max_points != 0) {
+      System.out.println(Utils.GREEN + "Game win!" + Utils.RESET);
+      return false;
+    }
+
+    String mp = max_points == 0 ? "" : "/" + max_points;
     String words = needsArchive()
         ? "Note: This game does not know when all words have been found. Exit with \"/exit\" when you cannot answer any more.\n"
             + Utils.GREEN + "Answered words:\n"
@@ -113,7 +120,7 @@ public class SpellingBee {
 
     System.out.printf(table, letters[1], letters[2], letters[3], letters[0], letters[4], letters[5], letters[6]);
 
-    System.out.printf("%s\n%s\n%sPoints: %d%s\n> ", statuses[code], words + Utils.RESET, Utils.GREEN, points,
+    System.out.printf("%s\n%s\n%sPoints: %d%s%s\n> ", statuses[code], words + Utils.RESET, Utils.GREEN, points, mp,
         Utils.RESET);
     String in = s.nextLine();
 
@@ -163,20 +170,26 @@ public class SpellingBee {
         return 5;
     }
 
-    points += i.length() - 3; // 1 point for 4 letter word, +1 point per letter after.
-    points += 7; // Pangrams get 7 extra points.
+    points += getPoints(i);
+
+    answered_words.add(i);
+
+    return 0;
+  }
+
+  public int getPoints(String i) {
+    int p = i.length() - 3; // 1 point for 4 letter word, +1 point per letter after.
+    p += 7; // Pangrams get 7 extra points.
 
     // The loop here will find if a letter is not a pangram, and if so,
     // remove the 7 points given to only pangrams
     for (int idx = 0; idx < letters.length; idx++)
       if (i.indexOf(letters[idx]) == -1) {
-        points -= 7;
+        p -= 7;
         break;
       }
 
-    answered_words.add(i);
-
-    return 0;
+    return p;
   }
 
   public void getData() throws IOException, InterruptedException {
@@ -202,17 +215,20 @@ public class SpellingBee {
         // compiler warnings.
         parsed = (Map<String, Object>) parsed.get("pastPuzzles");
         List<Map<String, Object>> week = (List<Map<String, Object>>) parsed.get("thisWeek");
-        for (int j = 0; j < 2; j++) {
-          for (int i = 0; i < week.size(); i++) {
-            if (getDate().equals((String) week.get(i).get("printDate"))) {
-              List<String> l = (List<String>) week.get(i).get("answers");
-              valid_words = new ArrayList<String>(l);
-
-              l = (List<String>) week.get(i).get("validLetters");
+        for (int i = 0; i < 2; i++) {
+          for (int j = 0; j < week.size(); j++) {
+            if (getDate().equals((String) week.get(j).get("printDate"))) {
+              List<String> l = (List<String>) week.get(j).get("validLetters");
 
               // Weird workaround, because I can't directly assign. Thanks Java.
               String[] e = { l.get(0), l.get(1), l.get(2), l.get(3), l.get(4), l.get(5), l.get(6) };
               letters = e;
+
+              l = (List<String>) week.get(j).get("answers");
+              valid_words = new ArrayList<String>(l);
+              for (int k = 0; k < valid_words.size(); k++)
+                max_points += getPoints(valid_words.get(k));
+
               break;
             }
           }
