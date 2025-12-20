@@ -111,10 +111,11 @@ public class SpellingBee {
     }
 
     String mp = max_points == 0 ? "" : "/" + max_points;
-    String words = needsArchive()
-        ? "Note: This game does not know when all words have been found. Exit with \"/exit\" when you cannot answer any more.\n"
+    String words = "Note: Exit with \"/exit\" when you cannot answer any more.";
+    words += needsArchive()
+        ? " This game does not know when all words have been found.\n"
             + Utils.GREEN + "Answered words:\n"
-        : "Answered words:" + Utils.GREEN + "\n";
+        : "\nAnswered words:" + Utils.GREEN + "\n";
     for (int i = 0; i < answered_words.size(); i++)
       words += answered_words.get(i) + "\n";
 
