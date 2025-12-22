@@ -13,6 +13,7 @@ import java.net.URI;
 import deps.MiniJson;
 import deps.Utils;
 
+// Technically, all of these values can be private. I simply don't like relying on getter functions when I can just get the value directly, when needed.
 public class SpellingBee {
   public int month;
   public int day;
@@ -21,7 +22,9 @@ public class SpellingBee {
   public int max_points = 0;
   public ArrayList<String> answered_words = new ArrayList<String>();
   public ArrayList<String> valid_words = new ArrayList<String>(); // Only available for unarchived games.
-  public String[] statuses = {
+  public String[] letters;
+
+  private final String[] statuses = {
       Utils.GREEN + "Good word!" + Utils.RESET,
       Utils.RED + "Words must contain at least 4 letters." + Utils.RESET,
       Utils.RED + "Words must include the center letter." + Utils.RESET,
@@ -32,14 +35,18 @@ public class SpellingBee {
       Utils.GREEN + "Game start!" + Utils.RESET,
       Utils.RED + "You already said this word!" + Utils.RESET,
   };
-  public String[] letters;
-  private String table = "  %s   %s  \n" +
+  private final String table = "  %s   %s  \n" +
       Utils.GRAY + "   \\ /   \n" + Utils.RESET +
       "%s " + Utils.GRAY + "- " + Utils.YELLOW + "%s" + Utils.GRAY + " -" + Utils.RESET + " %s\n" +
       Utils.GRAY + "   / \\   \n" + Utils.RESET +
       "  %s   %s  \n";
+  private final String RULES = String.format(Utils.RULES, statuses[1].replace(Utils.RED, Utils.BLUE),
+      statuses[2].replace(Utils.RED, Utils.BLUE), statuses[3].replace(Utils.RED, Utils.BLUE),
+      statuses[4].replace(Utils.RED, Utils.BLUE));
+  private final String[] badWords = { "fuck", "shit", "piss", "ass", "dick" };
+
   private int code = 7;
-  private String[] badWords = { "fuck", "shit", "piss", "ass", "dick" };
+  private String message = "";
   private HttpClient client = HttpClient.newHttpClient();
   private Scanner s;
 
@@ -82,21 +89,8 @@ public class SpellingBee {
     } catch (Exception e) {
       return false;
     }
-    System.out.println("----------------\n" + Utils.YELLOW + "Rules:" + Utils.RESET);
-    System.out.printf("1. %s\n", statuses[1].replace(Utils.RED, Utils.BLUE));
-    System.out.printf("2. %s\n", statuses[2].replace(Utils.RED, Utils.BLUE));
-    System.out.printf("3. %s\n", statuses[3].replace(Utils.RED, Utils.BLUE));
-    System.out.printf("4. %s\n", statuses[4].replace(Utils.RED, Utils.BLUE));
-    System.out.println("----------------");
-    System.out.println(Utils.YELLOW + "Letters can be used more than once.");
-    System.out.println("Score points to increase your rating." + Utils.RESET);
-    System.out.println("1. " + Utils.BLUE + "4-letter words are worth 1 point each." + Utils.RESET);
-    System.out.println("2. " + Utils.BLUE + "Longer words earn 1 point per letter." + Utils.RESET);
-    System.out.println(
-        "3. " + Utils.BLUE
-            + "Each puzzle includes at least one “pangram” which uses every letter. These are worth 7 extra points!"
-            + Utils.RESET);
-    System.out.println("----------------");
+
+    System.out.print(RULES);
     System.out.println(Utils.BLUE + "Type " + Utils.YELLOW_BG + "\"/exit\"" + Utils.RESET + Utils.BLUE
         + " at any point to exit the game." + Utils.GREEN);
     System.out.println("Press the enter key to start..." + Utils.RESET);
@@ -111,24 +105,44 @@ public class SpellingBee {
     }
 
     String mp = max_points == 0 ? "" : "/" + max_points;
-    String words = "Note: Exit with \"/exit\" when you cannot answer any more.";
+    String words = "Note: Run \"/help\" for the command list.";
     words += needsArchive()
-        ? " This game does not know when all words have been found.\n"
+        ? Utils.YELLOW + " This game does not know when all words have been found.\n"
             + Utils.GREEN + "Answered words:\n"
         : "\nAnswered words:" + Utils.GREEN + "\n";
     for (int i = 0; i < answered_words.size(); i++)
       words += answered_words.get(i) + "\n";
 
+    System.out.print(message);
+
     System.out.printf(table, letters[1], letters[2], letters[3], letters[0], letters[4], letters[5], letters[6]);
 
     System.out.printf("%s\n%s\n%sPoints: %d%s%s\n> ", statuses[code], words + Utils.RESET, Utils.GREEN, points, mp,
         Utils.RESET);
-    String in = s.nextLine();
+    String in = s.nextLine().toLowerCase();
 
-    if (in.equals("/exit"))
-      return false;
+    if (in.startsWith("/"))
+      return commandHandler(in);
+    else
+      message = "";
 
     code = checkInput(in);
+    return true;
+  }
+
+  public boolean commandHandler(String i) {
+    switch (i) {
+      case "/exit":
+        return false;
+      case "/help":
+        message = Utils.HELP;
+        break;
+      case "/rules":
+        message = RULES;
+        break;
+      default:
+        message = Utils.RED + "Invalid command. Run \"/help\" for the command list." + Utils.RESET;
+    }
     return true;
   }
 

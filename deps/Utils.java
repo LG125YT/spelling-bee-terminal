@@ -9,6 +9,25 @@ public class Utils {
   public static final String YELLOW_BG = "\u001B[43m";
   public static final String RESET = "\u001B[0m";
 
+  public static final String RULES = "----------------\n" + YELLOW + "Rules:\n" + RESET +
+      "1. %s\n" +
+      "2. %s\n" +
+      "3. %s\n" +
+      "4. %s\n" +
+      "----------------\n" +
+      YELLOW + "Letters can be used more than once.\n" +
+      "Score points to increase your rating.\n" + RESET +
+      "1. " + BLUE + "4-letter words are worth 1 point each.\n" + RESET +
+      "2. " + BLUE + "Longer words earn 1 point per letter.\n" + RESET +
+      "3. " + BLUE +
+      "Each puzzle includes at least one “pangram” which uses every letter. These are worth 7 extra points!\n" + RESET +
+      "----------------\n";
+  public static final String HELP = "----------------\n" + YELLOW + "Help:\n" + RESET +
+      "/help - Shows this message.\n" +
+      "/rules - Shows the rules of the game.\n" +
+      "/exit - Exit the game.\n" +
+      "----------------\n";
+
   // helps make things look prettier, or something.
   public static void clearScreen() {
     if (System.getProperty("os.name").contains("Windows")) {
