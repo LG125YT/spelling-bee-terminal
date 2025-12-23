@@ -18,7 +18,7 @@ In your shell, simply run `./run` to execute my code.
 
 If you are on Windows, idk. Manually compile each file? Unless your IDE can do something special, I guess.
 
-Alternatively, if you wish to modify or use parts of the code: the file structure is as follows:
+Alternatively, if you wish to modify or use parts of the code, the file structure is as follows:
 
 ```tree
 .

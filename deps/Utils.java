@@ -1,5 +1,7 @@
 package deps;
 
+import java.util.ArrayList;
+
 public class Utils {
   public static final String RED = "\u001B[31m";
   public static final String GREEN = "\u001B[32m";
@@ -27,6 +29,36 @@ public class Utils {
       "/rules - Shows the rules of the game.\n" +
       "/exit - Exit the game.\n" +
       "----------------\n";
+
+  // how many words to print before wrapping to the next column
+  private final static int LOOPVAL = 10;
+
+  // mightve put too much work into this tbh
+  public static String formatWords(String s, ArrayList<String> words) {
+    int columns = words.size() / LOOPVAL;
+    if (words.size() % LOOPVAL != 0)
+      columns++;
+
+    int width = 0;
+    // today i learned:
+    for (String w : words)
+      width = Math.max(width, w.length());
+    width += 2; // spacing
+
+    StringBuilder result = new StringBuilder();
+
+    for (int i = 0; i < LOOPVAL; i++) {
+      for (int j = 0; j < columns; j++) {
+        int idx = j * LOOPVAL + i;
+        if (idx < words.size()) {
+          result.append(String.format("%-" + width + "s", words.get(idx)));
+        }
+      }
+      result.append("\n");
+    }
+
+    return s + result.toString();
+  }
 
   // helps make things look prettier, or something.
   public static void clearScreen() {

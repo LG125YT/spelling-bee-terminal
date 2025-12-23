@@ -110,8 +110,7 @@ public class SpellingBee {
         ? Utils.YELLOW + " This game does not know when all words have been found.\n"
             + Utils.GREEN + "Answered words:\n"
         : "\nAnswered words:" + Utils.GREEN + "\n";
-    for (int i = 0; i < answered_words.size(); i++)
-      words += answered_words.get(i) + "\n";
+    words += Utils.formatWords(words, answered_words);
 
     System.out.print(message);
 
