@@ -34,7 +34,7 @@ public class Utils {
   private final static int LOOPVAL = 10;
 
   // mightve put too much work into this tbh
-  public static String formatWords(String s, ArrayList<String> words) {
+  public static String formatWords(ArrayList<String> words) {
     int columns = words.size() / LOOPVAL;
     if (words.size() % LOOPVAL != 0)
       columns++;
@@ -47,7 +47,7 @@ public class Utils {
 
     StringBuilder result = new StringBuilder();
 
-    for (int i = 0; i < LOOPVAL; i++) {
+    for (int i = 0; i < Math.min(words.size(), LOOPVAL); i++) {
       for (int j = 0; j < columns; j++) {
         int idx = j * LOOPVAL + i;
         if (idx < words.size()) {
@@ -57,7 +57,7 @@ public class Utils {
       result.append("\n");
     }
 
-    return s + result.toString();
+    return result.toString();
   }
 
   // helps make things look prettier, or something.
