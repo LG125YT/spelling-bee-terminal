@@ -28,6 +28,7 @@ public class Utils {
       "/help - Shows this message.\n" +
       "/rules - Shows the rules of the game.\n" +
       "/exit - Exit the game.\n" +
+      "/ranks - Show the rank list with your current rank.\n" +
       "----------------\n";
 
   // how many words to print before wrapping to the next column

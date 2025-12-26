@@ -22,6 +22,7 @@ public class SpellingBee {
   public int max_points = 0;
   public ArrayList<String> answered_words = new ArrayList<String>();
   public ArrayList<String> valid_words = new ArrayList<String>(); // Only available for unarchived games.
+  public ArrayList<Integer> rankNums = new ArrayList<Integer>(); // Matching required points to achieve a certain rank
   public String[] letters;
 
   private final String[] statuses = {
@@ -43,7 +44,9 @@ public class SpellingBee {
   private final String RULES = String.format(Utils.RULES, statuses[1].replace(Utils.RED, Utils.BLUE),
       statuses[2].replace(Utils.RED, Utils.BLUE), statuses[3].replace(Utils.RED, Utils.BLUE),
       statuses[4].replace(Utils.RED, Utils.BLUE));
-  private final String[] badWords = { "fuck", "shit", "piss", "ass", "dick" };
+  private final String[] badWords = { "fuck", "shit", "piss", "dick", "bitch" };
+  private final String[] ranks = { "Genius!", "Amazing!", "Great!", "Nice!", "Solid!", "Good!", "Moving up!",
+      "Good start!" };
 
   private int code = 7;
   private String message = "";
@@ -116,8 +119,9 @@ public class SpellingBee {
 
     System.out.printf(table, letters[1], letters[2], letters[3], letters[0], letters[4], letters[5], letters[6]);
 
-    System.out.printf("%s\n%s\n%sPoints: %d%s%s\n> ", statuses[code], words + Utils.RESET, Utils.GREEN, points, mp,
-        Utils.RESET);
+    System.out.printf("%s\n%s\n%sPoints: %d%s\n", statuses[code], words + Utils.RESET, Utils.GREEN, points, mp);
+    System.out.print(getRank() + Utils.RESET);
+    System.out.print("> ");
     String in = s.nextLine().toLowerCase();
 
     if (in.startsWith("/"))
@@ -139,8 +143,11 @@ public class SpellingBee {
       case "/rules":
         message = RULES;
         break;
+      case "/ranks":
+        message = getRankList();
+        break;
       default:
-        message = Utils.RED + "Invalid command. Run \"/help\" for the command list." + Utils.RESET;
+        message = Utils.RED + "Invalid command. Run \"/help\" for the command list.\n" + Utils.RESET;
     }
     return true;
   }
@@ -192,18 +199,74 @@ public class SpellingBee {
   }
 
   public int getPoints(String i) {
-    int p = i.length() - 3; // 1 point for 4 letter word, +1 point per letter after.
+    int p = i.length();
+    // 1 point for a 4 letter word,
+    // but longer words gives a point for every letter in it.
+    if (p == 4)
+      p -= 3;
     p += 7; // Pangrams get 7 extra points.
+    message = Utils.YELLOW + "Found pangram!\n" + Utils.RESET;
 
     // The loop here will find if a letter is not a pangram, and if so,
     // remove the 7 points given to only pangrams
     for (int idx = 0; idx < letters.length; idx++)
       if (i.indexOf(letters[idx]) == -1) {
         p -= 7;
+        message = "";
         break;
       }
 
     return p;
+  }
+
+  public String getRank() {
+    if (max_points == 0)
+      return "";
+    if (points < rankNums.get(7))
+      return "Rank: Beginner\n";
+
+    int idx = 0;
+    while (points < rankNums.get(idx)) {
+      idx++;
+    }
+
+    return "Rank: " + ranks[idx] + "\n";
+  }
+
+  public String getRankList() {
+    String r = "----------------\n";
+
+    for (int i = 0; i < ranks.length; i++) {
+      if (needsArchive()) {
+        r += "Sorry, no ranks are available for this game.\n";
+        break;
+      }
+
+      if (points < rankNums.get(i)) {
+        r += "  " + Utils.GRAY;
+      } else if (i == 0 || points < rankNums.get(i - 1)) {
+        r += "> " + Utils.YELLOW;
+      } else {
+        r += "  " + Utils.GREEN;
+      }
+      r += ranks[i] + " | at " + rankNums.get(i) + " points";
+
+      if (i == 0 && points >= rankNums.get(i)) {
+        r += Utils.RESET + " <\n";
+        continue;
+      }
+
+      if (points > rankNums.get(i) && points < rankNums.get(i - 1)) {
+        r += " | " + (rankNums.get(i - 1) - points) + " points until " + ranks[i - 1] + " "
+            + (rankNums.get(0) - points) + " points until Genius!" + Utils.RESET + " <";
+      }
+
+      r += "\n" + Utils.RESET;
+    }
+
+    r += "----------------\n";
+
+    return r;
   }
 
   public void getData() throws IOException, InterruptedException {
@@ -242,6 +305,10 @@ public class SpellingBee {
               valid_words = new ArrayList<String>(l);
               for (int k = 0; k < valid_words.size(); k++)
                 max_points += getPoints(valid_words.get(k));
+
+              double[] rank_points = { 0.7, 0.5, 0.4, 0.25, 0.15, 0.08, 0.05, 0.02 };
+              for (int k = 0; k < ranks.length; k++)
+                rankNums.add((int) Math.round(max_points * rank_points[k]));
 
               break;
             }

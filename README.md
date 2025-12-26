@@ -11,6 +11,7 @@ However, that file only contains game data for the past 2 weeks. Luckily, NYTime
 ## How to use
 
 Requires Java. And internet. That's kinda it.
+Tested against Java 25.
 
 In your standard Unix system, open a terminal and navigate to this directory.
 Compilation and execution are handled by a neat little shell script found in this directory.
@@ -39,3 +40,9 @@ I typically try to abstract away some of the more complex functions into files w
 ## Pull Requests
 
 Like I said, I don't know too much Java. However, this class is also acting as an introduction to programming in general, so it gets boring at times (because I *do* have a foundation in general programming). So, teach me stuff! I'm stuck with this language for about 6 more months for this class, so it would be cool to learn whatever I can. Maybe something to troll the AP graders with :)
+
+## Todo
+
+- Use [SpellingBeeSolver](https://www.sbsolver.com/) to get answers for earlier puzzles. Use `https://www.sbsolver.com/s/{num}`, `num` being the puzzle number since the beginning of the game, which is May 9, 2018.
+- Helpful links to related Spelling Bee resources.
+- Letter shuffling?
