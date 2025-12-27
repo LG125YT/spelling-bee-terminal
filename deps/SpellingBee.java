@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Random; // the kids at the AP course dont teach us this? lol
 import java.util.List;
 import java.util.Map;
 import java.util.regex.*;
@@ -52,6 +53,7 @@ public class SpellingBee {
   private String message = "";
   private HttpClient client = HttpClient.newHttpClient();
   private Scanner s;
+  private Random r = new Random();
 
   public SpellingBee(Scanner s) {
     this.s = s;
@@ -146,6 +148,10 @@ public class SpellingBee {
       case "/ranks":
         message = getRankList();
         break;
+      case "/shuffle":
+        message = Utils.GREEN + "Shuffled letters!\n" + Utils.RESET;
+        shuffleLetters();
+        break;
       default:
         message = Utils.RED + "Invalid command. Run \"/help\" for the command list.\n" + Utils.RESET;
     }
@@ -196,6 +202,15 @@ public class SpellingBee {
     answered_words.add(i);
 
     return 0;
+  }
+
+  public void shuffleLetters() {
+    for (int i = 0; i < 5; i++) {
+      int[] vals = { r.nextInt(6) + 1, r.nextInt(6) + 1 };
+      String tmp = letters[vals[0]];
+      letters[vals[0]] = letters[vals[1]];
+      letters[vals[1]] = tmp;
+    }
   }
 
   public int getPoints(String i) {
