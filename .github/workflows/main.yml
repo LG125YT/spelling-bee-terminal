@@ -36,20 +36,35 @@ jobs:
 
           if [ -z "$LAST_SHA" ] || [ "$LAST_SHA" = "null" ]; then
             echo "No previous release found; including all commits."
-            git log --pretty=format:"- [`%h`]($REPO_URL/commit/%H): %s" > release_notes.txt
+            git log --pretty=format:"- [\`%h\`]($REPO_URL/commit/%H): %s" > release_notes.md
           else
             echo "Previous release commit: $LAST_SHA"
-            git log "$LAST_SHA"..HEAD --pretty=format:"- [`%h`]($REPO_URL/commit/%H): %s" > release_notes.txt
+            git log "$LAST_SHA"..HEAD --pretty=format:"- [\`%h\`]($REPO_URL/commit/%H): %s" > release_notes.md
           fi
 
-          if [ ! -s release_notes.txt ]; then
-            echo "- No changes since last release." > release_notes.txt
+          if [ ! -s release_notes.md ]; then
+            echo "- No changes since last release." > release_notes.md
+          fi
+
+      - name: Verify artifact
+        run: |
+          echo "workspace: $(pwd)"
+          echo "files in workspace:"
+          ls -la
+          echo "files in build/:"
+          ls -la build || true
+          if [ ! -f SpellingBee.jar ]; then
+            echo "ERROR: SpellingBee.jar not found. Aborting before release."
+            exit 1
           fi
 
       - name: Create release and upload
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ github.sha }}
           name: ${{ github.sha }}
-          body_path: release_notes.txt
+          body_path: release_notes.md
           files: SpellingBee.jar
