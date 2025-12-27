@@ -45,4 +45,3 @@ Like I said, I don't know too much Java. However, this class is also acting as a
 ## Todo
 
 - Use [SpellingBeeSolver](https://www.sbsolver.com/) to get answers for earlier puzzles. Use `https://www.sbsolver.com/s/{num}`, `num` being the puzzle number since the beginning of the game, which is May 9, 2018.
-- Helpful links to related Spelling Bee resources.

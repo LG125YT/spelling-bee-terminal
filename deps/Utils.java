@@ -7,6 +7,7 @@ public class Utils {
   public static final String GREEN = "\u001B[32m";
   public static final String YELLOW = "\u001B[33m";
   public static final String BLUE = "\u001B[34m";
+  public static final String CYAN = "\u001b[36m";
   public static final String GRAY = "\u001B[90m";
   public static final String YELLOW_BG = "\u001B[43m";
   public static final String RESET = "\u001B[0m";
@@ -30,6 +31,11 @@ public class Utils {
       "/exit - Exit the game.\n" +
       "/ranks - Show the rank list with your current rank.\n" +
       "/shuffle - Shuffle current letters.\n" +
+      "----------------\n" +
+      YELLOW + "Useful links:\n" + RESET +
+      "Solving tips: " + CYAN + "https://www.nytimes.com/2021/12/09/crosswords/spellingbee-tips.html\n" + RESET +
+      "Hints for the day's game: " + CYAN + "https://www.nytimes.com/%s/crosswords/spelling-bee-forum.html\n" + RESET +
+      "Spelling Bee forum: " + CYAN + "https://www.nytimes.com/spotlight/spelling-bee-forum\n" + RESET +
       "----------------\n";
 
   // how many words to print before wrapping to the next column

@@ -140,7 +140,7 @@ public class SpellingBee {
       case "/exit":
         return false;
       case "/help":
-        message = Utils.HELP;
+        message = Utils.HELP.replace("%s", getDate().replaceAll("-", "/"));
         break;
       case "/rules":
         message = RULES;
