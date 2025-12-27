@@ -9,8 +9,7 @@ permissions:
   packages: write
 
 env:
-  # Attempt to enable step and runner debug (note: enabling full debug logs may require
-  # repository secret ACTIONS_STEP_DEBUG=true); set here for additional step-level debug.
+  # Note: to enable full runner HTTP debug logs set the repository secret ACTIONS_STEP_DEBUG=true
   ACTIONS_STEP_DEBUG: 'true'
   ACTIONS_RUNNER_DEBUG: 'true'
 
@@ -36,7 +35,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-
           REPO="${GITHUB_REPOSITORY}"
           REPO_URL="https://github.com/$REPO"
 
@@ -85,11 +83,13 @@ jobs:
             fi
           fi
 
+          ARTIFACT_NAME=$(basename "$ARTIFACT_PATH")
           echo "Using artifact: $ARTIFACT_PATH"
           stat -c '%n %s bytes' "$ARTIFACT_PATH" || true
           sha256sum "$ARTIFACT_PATH" || true
 
           echo "artifact_path=$ARTIFACT_PATH" >> $GITHUB_OUTPUT
+          echo "artifact_name=$ARTIFACT_NAME" >> $GITHUB_OUTPUT
 
       - name: Artifact info (debug)
         run: |
@@ -104,8 +104,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.sha }}
-          release_name: ${{ github.sha }}
+          # prefix the SHA so the tag is NOT exactly 40 hex characters
+          tag_name: release-${{ github.sha }}
+          release_name: release-${{ github.sha }}
           body_path: release_notes.md
           draft: false
           prerelease: false
@@ -117,10 +118,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.verify_artifact.outputs.artifact_path }}
-          asset_name: SpellingBee.jar
+          asset_name: ${{ steps.verify_artifact.outputs.artifact_name }}
           asset_content_type: application/java-archive
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: ${{ github.sha }}
-          name: ${{ github.sha }}
-          body_path: release_notes.md
-          files: SpellingBee.jar
