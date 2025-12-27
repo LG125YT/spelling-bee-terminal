@@ -1,6 +1,7 @@
 # Terminal Spelling Bee
 
 Simple Java project for my school's AP Computer Science A class. Took about 3 days to make.
+The first commit is the original submission. Everything after I've simply done for fun.
 
 I don't really know Java that well. I am not bothering with external libraries and toolchains.
 
@@ -11,11 +12,11 @@ However, that file only contains game data for the past 2 weeks. Luckily, NYTime
 ## How to use
 
 Requires Java. And internet. That's kinda it.
-Tested against Java 25.
+Tested on Linux against Java 25.
 
 In your standard Unix system, open a terminal and navigate to this directory.
 Compilation and execution are handled by a neat little shell script found in this directory.
-In your shell, simply run `./run` to execute my code.
+In your shell, simply run `./run` to execute my code. For other options, run `./run -h`.
 
 If you are on Windows, idk. Manually compile each file? Unless your IDE can do something special, I guess.
 

@@ -1,10 +1,44 @@
 #!/bin/sh
 
-rm -r build
+# Usage:
+# Run "./run" to compile the java files and run the program.
+# Include "dist" after to produce a JAR file instead of running the program.
+# Include any name after "dist" to write the JAR file to {name}.jar
+# Include "-c" or "--clean" anywhere to do a clean build from scratch. Alternatively, manually delete the "build" directory.
 
-javac -d build *.java
+for arg in "$@"; do
+  case $arg in
+  -h | --help) h=true ;;
+  -c | --clean) c=true ;;
+  esac
+done
 
-find . -maxdepth 1 ! -name 'build' ! -name '*.java' ! -name 'run' ! -name '.' -exec cp -r {} build/ &>/dev/null
+if [ ! -z "$h" ]; then
+  echo """Usage:
+Run \"./run\" to compile the java files and run the program.
+Include \"dist\" after to produce a JAR file instead of running the program.
+Include any name after \"dist\" to write the JAR file to {name}.jar
+Include \"-c\" or \"--clean\" anywhere to do a clean build from scratch. Alternatively, manually delete the \"build\" directory."""
+  exit
+fi
 
-cd build
-java Main
+if [ ! -z "$c" ]; then
+  rm -r build
+fi
+
+javac -d build ./*.java
+
+cd build || (echo "Compilation failed, exiting." && exit)
+
+if [ -n "$1" ] && [ "$1" = "dist" ]; then
+  file="${2:-Project}"
+  file="${file%.jar}.jar"
+  if [ ! -d META-INF/ ]; then
+    mkdir META-INF
+    printf "Manifest-Version: 1.0\nCreated-By: 25 (Oracle Corporation)\nMain-Class: Main\n" >>META-INF/MANIFEST.MF
+  fi
+  cd ..
+  jar cMvf "$file" -C build .
+else
+  java Main
+fi
