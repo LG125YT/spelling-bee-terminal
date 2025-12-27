@@ -1,0 +1,55 @@
+# chatgpt did all this btw
+name: Build and Release
+
+on:
+  push:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run build script
+        run: |
+          chmod +x ./run
+          ./run dist SpellingBee
+
+      - name: Generate release notes from commits
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+
+          REPO="${GITHUB_REPOSITORY}"
+          REPO_URL="https://github.com/$REPO"
+
+          LAST_SHA=$(gh api "repos/$REPO/releases?per_page=1" \
+            --jq '.[0].target_commitish' 2>/dev/null || true)
+
+          if [ -z "$LAST_SHA" ] || [ "$LAST_SHA" = "null" ]; then
+            echo "No previous release found; including all commits."
+            git log --pretty=format:"- [`%h`]($REPO_URL/commit/%H): %s" > release_notes.txt
+          else
+            echo "Previous release commit: $LAST_SHA"
+            git log "$LAST_SHA"..HEAD --pretty=format:"- [`%h`]($REPO_URL/commit/%H): %s" > release_notes.txt
+          fi
+
+          if [ ! -s release_notes.txt ]; then
+            echo "- No changes since last release." > release_notes.txt
+          fi
+
+      - name: Create release and upload
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.sha }}
+          name: ${{ github.sha }}
+          body_path: release_notes.txt
+          files: SpellingBee.jar
