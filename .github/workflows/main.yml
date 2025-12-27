@@ -6,6 +6,13 @@ on:
 
 permissions:
   contents: write
+  packages: write
+
+env:
+  # Attempt to enable step and runner debug (note: enabling full debug logs may require
+  # repository secret ACTIONS_STEP_DEBUG=true); set here for additional step-level debug.
+  ACTIONS_STEP_DEBUG: 'true'
+  ACTIONS_RUNNER_DEBUG: 'true'
 
 jobs:
   build-and-release:
@@ -21,6 +28,8 @@ jobs:
         run: |
           chmod +x ./run
           ./run dist SpellingBee
+          echo "build output (root):"
+          ls -la || true
 
       - name: Generate release notes from commits
         env:
@@ -46,23 +55,70 @@ jobs:
             echo "- No changes since last release." > release_notes.md
           fi
 
-      - name: Verify artifact
+      - id: verify_artifact
+        name: Verify artifact and determine path
         run: |
+          set -e
           echo "workspace: $(pwd)"
-          echo "files in workspace:"
+          echo "ls root:"
           ls -la
-          echo "files in build/:"
+          echo "ls build/:"
           ls -la build || true
-          if [ ! -f SpellingBee.jar ]; then
-            echo "ERROR: SpellingBee.jar not found. Aborting before release."
-            exit 1
+          echo "ls dist/:"
+          ls -la dist || true
+
+          # check common output locations
+          if [ -f "./SpellingBee.jar" ]; then
+            ARTIFACT_PATH="./SpellingBee.jar"
+          elif [ -f "./build/SpellingBee.jar" ]; then
+            ARTIFACT_PATH="./build/SpellingBee.jar"
+          elif [ -f "./dist/SpellingBee.jar" ]; then
+            ARTIFACT_PATH="./dist/SpellingBee.jar"
+          else
+            # try to find any *.jar in build/ or dist/
+            CANDIDATE=$(find build dist . -maxdepth 2 -type f -name '*.jar' | head -n 1 || true)
+            if [ -n "$CANDIDATE" ]; then
+              ARTIFACT_PATH="$CANDIDATE"
+            else
+              echo "ERROR: No JAR artifact found (looked for SpellingBee.jar and *.jar in build/ dist/ .). Aborting."
+              exit 1
+            fi
           fi
 
-      - name: Create release and upload
-        uses: softprops/action-gh-release@v2
+          echo "Using artifact: $ARTIFACT_PATH"
+          stat -c '%n %s bytes' "$ARTIFACT_PATH" || true
+          sha256sum "$ARTIFACT_PATH" || true
+
+          echo "artifact_path=$ARTIFACT_PATH" >> $GITHUB_OUTPUT
+
+      - name: Artifact info (debug)
+        run: |
+          ART="${{ steps.verify_artifact.outputs.artifact_path }}"
+          echo "Final artifact path from verify_artifact: $ART"
+          file "$ART" || true
+          ls -la "$(dirname "$ART")" || true
+
+      - name: Create GitHub release
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          tag_name: ${{ github.sha }}
+          release_name: ${{ github.sha }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.verify_artifact.outputs.artifact_path }}
+          asset_name: SpellingBee.jar
+          asset_content_type: application/java-archive
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ github.sha }}
           name: ${{ github.sha }}
